@@ -9,13 +9,14 @@ report demonstrates how NST can transform images, maintaining the structural ele
 Key findings include high-quality image generation and flexibility in style application,
 though challenges such as computational demands and handling complex styles remains.
 
-To view the project report,[Click Here]([https://github.com/user-attachments/files/15887289/Image_Denoising.pdf](https://drive.google.com/file/d/1T6ZPwOEbs9g0smvQbUrEXco4StRbMfgQ/view?usp=sharing)) or demo video, [Click Here](https://drive.google.com/file/d/1HcGsahvrPKm6-p8mgTMTgp0A_JbSovBE/view?usp=sharing).
+To view the project report,[Click Here](https://drive.google.com/file/d/1T6ZPwOEbs9g0smvQbUrEXco4StRbMfgQ/view?usp=sharing) or demo video, [Click Here](https://drive.google.com/file/d/1HcGsahvrPKm6-p8mgTMTgp0A_JbSovBE/view?usp=sharing).
 
 ## Table of Contents :bar_chart:
 - Requirements
 - Datasets Used
 - Data Preprocessing
 - Models Architecture
+- Loss Functions
 - Model Training and Hyperparameters
 - Model Evaluation
 - How To Run
@@ -75,34 +76,50 @@ For COCO 2017 dataset [Click Here]([https://www.kaggle.com/datasets/soumikrakshi
     certain machine learning algorithms. This is a lambda function that takes a tensor x
     (representing an image) as input. The mul function (short for multiply) element-wise
     multiplies each value in the tensor by 255.
+2. Data Preprocessing for Style Images:
+   ```python
+   def LoadStyleImage(path, batch_size, device):
+    style = Image.open(path).convert('RGB')
+    style = style.resize((256, 256))
+    style = style_transform(style)
+    style = style.repeat(batch_size, 1, 1, 1)
+    style = style.to(device) 
+    return style
+   ```
+   The image is opened using Image.open and converted to RGB format with convert('RGB'), ensuring it has three color channels. It's resized to 256x256 pixels with style.resize((256, 256)) for model consistency.    The preprocessed style image is then replicated batchsize times using style.repeat(batchsize, 1, 1, 1), which is useful for batch processing. Finally, the tensor is transferred to the specified device (CPU or    GPU) with .to(device).
+   ```python
+   style_transform = transforms.Compose([
+                            transforms.ToTensor(),
+                            transforms.Lambda(lambda x: x.mul(255))
+                            ])
+   ```
+   Converts the PIL image format into a PyTorch tensor suitable for computations. Normalizes the pixel values between 0 and 255.
 
-For the Autoencoder model, data preprocessing involves loading and resizing images to 1024x1024 pixels, separating low and high-quality images for training, and noisy and high-quality pairs for validation. Images are also split into smaller patches to aid feature learning. They're converted to tensors and normalized. CBDNet follows similar steps minus patch generation, as it doesn't enhance performance with input-sized patches. RIDNet shares preprocessing steps with the Autoencoder.
-```python
-def create_patches ( images , patch_size =(256 , 256 , 3) ) :
-  combined_patches = []
-  for image in images :
-  H , W , C = image . shape
-  patch_height , patch_width , patch_channels = patch_size
-  patches = []
-  for i in range (0 , H , patch_height ) :
-    for j in range (0 , W , patch_width ) :
-     patch = image [ i : i + patch_height , j : j + patch_width , :]
-    patches . append ( patch )
-   combined_patches . extend ( patches )
- return combined_patches
-```
 ## Models Architecture :triangular_ruler:
 
-### 1. Autoencoder :
-The Autoencoder is a neural network tailored for image denoising tasks, comprising an encoder and decoder. The encoder compresses the input image into a lower-dimensional representation, while the decoder reconstructs the denoised image from this compressed form. This architecture efficiently removes noise by learning to preserve essential features while discarding noise through convolutional and deconvolutional layers. It ensures accurate preservation and reconstruction of spatial information critical for image quality enhancement.
+### 1. ConvLayer :
+This class represents a convolutional layer, a fundamental building block in Convolutional
+Neural Networks (CNNs). It performs the core operation of a CNN - extracting features
+from the input data using learnable filters (kernels).
+### 2. ResidualBlock :
+This class defines a residual block, a commonly used architecture in deep residual networks.
+It introduces a ”shortcut connection” that allows the gradient to flow directly through the
+layers, addressing the vanishing gradient problem that can hinder training deep neural networks.
 
-### 2. CBDNet :
-CBDNet consists of two subnetworks: a noise estimation network and a denoising network. The noise estimation network uses five convolutional layers with ReLU activations to estimate the noise level map in a noisy image. The denoising network takes the noisy image and the estimated noise map as inputs, employing convolutional, ReLU, and average pooling layers to extract features and reduce noise. It includes transposed convolutional layers for upsampling and additional convolutional layers for refinement, incorporating skip connections for enhanced denoising performance. The final denoised image is obtained by adding the denoised output from the network to the original noisy image.
+### 3. UpsampleConvLayer :
+This class defines a convolutional layer with upsampling capabilities. It’s often used in decoder parts of networks where the goal is to increase the spatial resolution of the feature maps.
 
-### 3. RIDNet :
-RIDNet is a convolutional neural network designed for real image denoising, addressing challenges posed by spatially variant noise in photographs. It features a modular architecture with a Channel Attention (CA) module to enhance channel dependencies, an Effective Attention Module (EAM) utilizing dilated convolutions for multi-scale feature capture, and Residual-on-Residual connections to facilitate information flow, particularly for low-frequency details.
+### 4. TransformerNet
+It combines convolutional layers, residual blocks, and upsampling convolutions to achieve
+the desired style transfer effect.
 
-All three model's architecture can be found in Models directory.
+## Loss Functions :
+1. Feature reconstruction loss encourages the model to capture similar features rather than exact pixel values. It uses a pre-trained network to extract key features like edges and textures from both the target and output images. The loss is calculated based on the difference between these features, ensuring the model captures the essence of the target image, even if pixel values differ.
+   ![image](https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer/assets/148644657/263a46e9-6c3c-4cb4-af04-6de59963da95)
+
+2. Style reconstruction loss analyzes feature co-occurrences using a pre-trained network, calculating the Gram matrices to capture stylistic elements like colors and textures. By comparing these matrices between the generated and reference images across multiple layers, it ensures the model captures stylistic fingerprints accurately, from small-scale brushstrokes in lower layers to larger-scale color harmonies in higher layers
+   
+   ![image](https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer/assets/148644657/4bde0d5b-3421-464e-a37e-b7b4ca3368c3)
 
 ## Model Training and Hyperparameters :dart:
 All the model were trained on GPU P100 that is available on kaggle. Model training and
