@@ -139,24 +139,24 @@ Demo video, [Click Here](https://drive.google.com/file/d/1HcGsahvrPKm6-p8mgTMTgp
   1. Clone the repository:
     <pre>
     <code class="python">
-    git clone https://github.com/vaibhavprajapati-22/Image-Denoising
+    git clone https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer
     </code>
     </pre>
   2. Install the required dependencies:
      <pre>
       <code class="python">
-        cd Image-Denoising
+        cd Fast-Neural-Style-Transfer
         pip install -r requirements.txt
       </code>
      </pre>
   3. Run main script
      <pre>
       <code class="python">
-        python main.py
+        streamlit run main.py
       </code>
      </pre>
 
-After running the main.py file images in test/low will be read and correspoing outputs will be stored in test/predicted. Make sure that images are in png format.
+After this default browser will be opened with local host. You can now select any of the 8 styles and upload a content image to get it stylized.
 
 ## Challenges Faced :mag_right:
   - Due to limited GPU memory, training was not possible if the size of style image is
