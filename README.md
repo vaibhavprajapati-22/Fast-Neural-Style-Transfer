@@ -17,10 +17,10 @@ To view the project report,[Click Here](https://drive.google.com/file/d/1T6ZPwOE
 - Data Preprocessing
 - Models Architecture
 - Loss Functions
-- Model Training and Hyperparameters
-- Model Evaluation
+- Hyperparameters
+- Results
 - How To Run
-- Improvements
+- Challenges Faced
 - References
 
 ## Requirements :bell:
@@ -121,87 +121,19 @@ the desired style transfer effect.
    
    ![image](https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer/assets/148644657/4bde0d5b-3421-464e-a37e-b7b4ca3368c3)
 
-## Model Training and Hyperparameters :dart:
-All the model were trained on GPU P100 that is available on kaggle. Model training and
-hyperparametrs of different models is given below :
-###  Autoencoder :
-  - Patch size : 256 x 256
-  - Batch size : 32
-  - Loss : Mean squared error
-  - Optimizer : Adam
-  - Learning rate : 0.001
-  - Learning rate scheduler : learning rate becomes 0.9 after every 10 epochs
-  - Epochs : 100
-### CDBNet :
-  - Patch size : 256 x 256
-  - Batch size : 32
-  - Loss : Mean squared error
-  - Optimizer : Adam
-  - Learning rate : 0.001
-  - Learning rate scheduler : learning rate becomes 0.9 after every 50 epochs
-  - Epochs : 2000
-### RIDNet :
-  - Patch size : 256 x 256
-  - Batch size : 8
-  - Loss : L1 loss
-  - Optimizer : Adam
-  - Number of feactures : 128
-  - Learning rate : 0.001
-  - Learning rate scheduler : learning rate becomes 0.9 times after every 10 epochs
-  - Epochs : 100
+## Hyperparameters :dart:
+All the model were trained on GPU P100 that is available on kaggle.
+- Batch size : 4
+-  Content weight : 1e5
+- Style weight : 1e10
+- Learning rate : 0.001
+-  epochs : 1
+## Results :loudspeaker:
+![image](https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer/assets/148644657/e968c21e-4ade-4bda-8368-589dbdfb96d5)
 
-### Training Function : 
-```python
-for epoch in range(epochs):
-    loss_e = 0
-    for batch in tqdm(dataloader):
-        Model.train()
-        optimizer.zero_grad()
-        
-        low_img, high_img = batch
-        low_img = low_img.to(device)
-        high_img = high_img.to(device)
-        
-        denoished_img = Model(low_img)
-        
-        error = criterion(denoished_img, high_img) 
-        
-        error.backward()
-        optimizer.step()
-        loss_e += error.item()
+![image](https://github.com/vaibhavprajapati-22/Fast-Neural-Style-Transfer/assets/148644657/ef5a717f-45a9-4cc0-9aaf-f8b445a64225)
 
-    scheduler.step()
-    loss_e /= len(dataloader)
-    loss.append(loss_e)
-    val_loss, val_psnr = validation(Model)
-    train_loss, train_psnr = training(Model)
-    print(f"{epoch+1} / {epochs} Runnung Training loss : {loss_e}")
-    print(f"Training loss : {train_loss:.4f} Training PSNR : {train_psnr:.4f} Validation Loss : {val_loss:.4f} Validation PSNR : {val_psnr:.4f}")
-```
-### Model weights 
-Download weights and config files form hugging face :
-[Autoencoder](https://huggingface.co/vaibhavprajapati22/Image_Denoising_Autoencoder)
-[CBDNet](https://huggingface.co/vaibhavprajapati22/Image_Denoising_CBDNet)
-[RIDNet](https://huggingface.co/vaibhavprajapati22/Image_Denoising_RIDNet)
-### Training PSNR :
-  - Autoencoder : 16.4439
-  -  CBDNet : 35.2989
-  -  RIDNet : 26.6179
-### Loss :
-![image](https://github.com/vaibhavprajapati-22/Image-Denoising/assets/148644657/f85551a0-c0e6-456d-99a8-f31ea93bfced)
-
-## Model Evaluation :loudspeaker:
-### Validation PSNR :
-  - Autoencoder : 15.391
-  - CBDNet : 22.016
-  - RIDNet : 22.379
-### Validation SSIM :
-  - Autoencoder : 0.594
-  - CBDNet : 0.789
-  - RIDNet : 0.746
-
-### Testing On Some Images :
-![image](https://github.com/vaibhavprajapati-22/Image-Denoising/assets/148644657/84f76c61-43d8-4af8-8c87-9604b907276b)
+Demo video, [Click Here](https://drive.google.com/file/d/1HcGsahvrPKm6-p8mgTMTgp0A_JbSovBE/view?usp=sharing).
 
 ## How To Run :gun:
   1. Clone the repository:
@@ -226,12 +158,11 @@ Download weights and config files form hugging face :
 
 After running the main.py file images in test/low will be read and correspoing outputs will be stored in test/predicted. Make sure that images are in png format.
 
-## Improvements :mag_right:
-  - Increase Computational Resources: Utilize platforms with longer session limits or more powerful GPUs for more extensive training, particularly benefiting CBDNet.
-  - Data Augmentation: Enhance training data diversity with techniques like random cropping, flipping, and adding noise patterns.
-  - Early Stopping: Prevent overfitting by monitoring validation loss and stopping training when it increases.
+## Challenges Faced :mag_right:
+  - Due to limited GPU memory, training was not possible if the size of style image is
+more than 2MB so we should resize it to (256, 256)
+  - Each style requires a separate training, so its a time consuming process to get weights
+for 8 styles.
 ## References :paperclip:
-  1. https://www.ni.com/en-in/innovations/white-papers/11/peak-signal-to-noise-ratio-as-an-image-quality-metric.html
-  2. https://keras.io/examples/vision/autoencoder/
-  3. https://arxiv.org/pdf/1807.04686v2
-  4. https://arxiv.org/pdf/1904.07396v2
+  1. [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155)
+  2. [A Neural Algorithm of Artistic Style](https://arxiv.org/abs/1508.06576)
