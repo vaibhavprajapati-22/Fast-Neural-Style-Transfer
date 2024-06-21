@@ -24,6 +24,15 @@ content_transform = transforms.Compose([
 
 model = TransformerNet()
 
+@st.cache_data
+def stylize(data):
+    user_file_path = os.path.join("user_uploads", "1.jpg")
+    with open(user_file_path, "wb") as user_file:
+        user_file.write(data.getbuffer())
+        
+    content_image = Image.open(user_file_path).convert('RGB')
+    return content_image
+
 
 def main():
     st.title("Fast Neural Style Transfer")
@@ -38,13 +47,8 @@ def main():
         st.image(style_image, use_column_width=True)
 
     if data is not None:
-        user_file_path = os.path.join("user_uploads", "1.jpg")
-        with open(user_file_path, "wb") as user_file:
-            user_file.write(data.getbuffer())
-        
-        content_image = Image.open(user_file_path).convert('RGB')
+        content_image = stylize(data)
         content_image_dis = content_image.resize((256, 256))
-
         with col2:
             st.header("Content Image")
             st.image(content_image_dis, use_column_width=True)
