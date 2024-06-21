@@ -4,6 +4,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 import io
+import os
 
 styles = [
     "American Steam Train Travel",
@@ -37,7 +38,11 @@ def main():
         st.image(style_image, use_column_width=True)
 
     if data is not None:
-        content_image = Image.open(data).convert('RGB')
+        user_file_path = os.path.join("user_uploads", "1.jpg")
+        with open(user_file_path, "wb") as user_file:
+            user_file.write(data.getbuffer())
+        
+        content_image = Image.open(user_file_path).convert('RGB')
         content_image_dis = content_image.resize((256, 256))
 
         with col2:
