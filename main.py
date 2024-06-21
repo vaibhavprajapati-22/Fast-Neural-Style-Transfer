@@ -27,7 +27,7 @@ model = TransformerNet()
 
 def main():
     st.title("Fast Neural Style Transfer")
-    data = st.file_uploader("Choose an image", type="jpg")
+    data = st.file_uploader("Choose an image", type=["jpg","png"], accept_multiple_files=False)
     style_choice = st.selectbox("Choose a style", styles)
     style_path = "Style Images for Neural Style Transfer/" + style_choice + ".jpg"
     style_image = Image.open(style_path)
